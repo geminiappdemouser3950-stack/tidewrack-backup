@@ -1,12 +1,21 @@
 extends Node
 ## Journal — discovered-logs system.
 ##
-## Autoloaded as `Journal` (see project.godot). Dialogue nodes and choices will
-## record discovered entries here via a "journal" key; the journal screen
-## renders them. Current state: storage + helpers; discovery hook, persistence
-## and reader UI still to come.
+## Autoloaded as `Journal` (see project.godot). DialogueManager reports every
+## set_flag here; canonical flags set truthy become discovered entries, keyed by
+## the flag name. Entries persist through GameState's save/load and are wiped
+## on New Game. Reader UI still to come.
 
 signal entry_added(id: String)
+
+## The canonical narrative flags from narrative/flags-and-branches.md. Only these
+## produce journal entries; incidental or debug flags are ignored.
+const CANONICAL_FLAGS: Array[String] = [
+	"skeptic",
+	"believer",
+	"trusted_edith",
+	"radioed_tom",
+]
 
 var _entries: Array[String] = []
 
@@ -21,6 +30,15 @@ func discover(id: String) -> void:
 		return
 	_entries.append(id)
 	entry_added.emit(id)
+
+
+## Called by DialogueManager for every flag a node or choice sets. Records an
+## entry when the flag is canonical and truthy. A flag set to false (e.g. the
+## "keep it quiet" branch writing trusted_edith = false) records nothing, since
+## the entry id is the flag name and there is no separate id for the negative.
+func record_flag(name: String, value: Variant) -> void:
+	if name in CANONICAL_FLAGS and value:
+		discover(name)
 
 
 func entries() -> Array[String]:

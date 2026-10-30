@@ -8,6 +8,11 @@ extends Node
 ##     "choices": [ {"text": String, "next": String, "set_flag": {..}} ],
 ##     "set_flag": { "flag_name": value } }      # applied when the node is entered
 ##
+## Every set_flag is also reported to Journal, which records a discovered entry
+## when the flag is one of the canonical narrative flags and is set truthy.
+## Entry ids are the flag names, so the journal and the flags doc share one
+## vocabulary (see narrative/flags-and-branches.md).
+##
 ## UI (dialogue_box.gd) listens to these signals; it does not read the graph.
 
 signal dialogue_started
@@ -78,7 +83,9 @@ func _goto(id: String) -> void:
 
 func _apply_flags(dict: Dictionary) -> void:
 	for key in dict:
-		GameState.set_flag(str(key), dict[key])
+		var name := str(key)
+		GameState.set_flag(name, dict[key])
+		Journal.record_flag(name, dict[key])
 
 
 func _finish() -> void:

@@ -8,6 +8,8 @@ Checks, for every data/dialogue/*.json file:
   - every referenced target id exists
   - at least one terminal (next == null) is reachable from an entry point
   - reports orphan nodes (unreachable from any known entry) as warnings
+  - reports every flag the graph sets, and warns on any flag that is not one
+    of the canonical flags (the journal keys entries by these names)
 
 Exit code 0 = all valid, 1 = at least one error.
 
@@ -21,6 +23,11 @@ from pathlib import Path
 
 # Entry-point node ids the game starts graphs from (see scripts/game.gd).
 KNOWN_ENTRIES = {"logbook", "radio", "door", "start"}
+
+# Canonical narrative flags (narrative/flags-and-branches.md). Must match
+# Journal.CANONICAL_FLAGS in scripts/journal.gd — the journal records an entry
+# under the flag's name whenever one of these is set truthy.
+CANONICAL_FLAGS = {"skeptic", "believer", "trusted_edith", "radioed_tom"}
 
 ROOT = Path(__file__).resolve().parent.parent
 DIALOGUE_DIR = ROOT / "data" / "dialogue"
@@ -46,23 +53,39 @@ def reachable(graph: dict, entries: set[str]) -> set[str]:
     return seen
 
 
-def validate_file(path: Path) -> tuple[list[str], list[str]]:
+def validate_file(path: Path) -> tuple[list[str], list[str], str]:
     errors: list[str] = []
     warnings: list[str] = []
 
     try:
         graph = json.loads(path.read_text())
     except json.JSONDecodeError as exc:
-        return [f"{path.name}: invalid JSON — {exc}"], warnings
+        return [f"{path.name}: invalid JSON — {exc}"], warnings, ""
 
     if not isinstance(graph, dict):
-        return [f"{path.name}: top level must be an object of node_id -> node"], warnings
+        return [f"{path.name}: top level must be an object of node_id -> node"], warnings, ""
 
     has_terminal = False
+    flags_set: dict[str, list] = {}  # flag name -> values written
     for nid, node in graph.items():
         if not isinstance(node, dict):
             errors.append(f"{path.name}:{nid}: node must be an object")
             continue
+
+        for owner in [node] + [c for c in node.get("choices", []) if isinstance(c, dict)]:
+            sf = owner.get("set_flag")
+            if sf is None:
+                continue
+            if not isinstance(sf, dict):
+                errors.append(f"{path.name}:{nid}: 'set_flag' must be an object of flag -> value")
+                continue
+            for flag, value in sf.items():
+                flags_set.setdefault(flag, []).append(value)
+                if flag not in CANONICAL_FLAGS:
+                    warnings.append(
+                        f"{path.name}:{nid}: sets non-canonical flag '{flag}' "
+                        f"(not in {sorted(CANONICAL_FLAGS)}; the journal will ignore it)"
+                    )
 
         has_choices = isinstance(node.get("choices"), list) and len(node["choices"]) > 0
         has_next = "next" in node
@@ -100,7 +123,11 @@ def validate_file(path: Path) -> tuple[list[str], list[str]]:
         for orphan in sorted(set(graph) - seen):
             warnings.append(f"{path.name}:{orphan}: unreachable from entry points {sorted(entries)}")
 
-    return errors, warnings
+    report = ", ".join(
+        f"{f} -> journal" if any(v for v in vs) and f in CANONICAL_FLAGS else f
+        for f, vs in sorted(flags_set.items())
+    )
+    return errors, warnings, report
 
 
 def main() -> int:
@@ -112,11 +139,13 @@ def main() -> int:
     all_errors: list[str] = []
     all_warnings: list[str] = []
     for path in files:
-        errs, warns = validate_file(path)
+        errs, warns, flag_report = validate_file(path)
         all_errors += errs
         all_warnings += warns
         status = "OK" if not errs else "FAIL"
         print(f"[{status}] {path.relative_to(ROOT)}  ({len(json.loads(path.read_text()))} nodes)")
+        if flag_report:
+            print(f"       flags: {flag_report}")
 
     for w in all_warnings:
         print(f"  warning: {w}")
