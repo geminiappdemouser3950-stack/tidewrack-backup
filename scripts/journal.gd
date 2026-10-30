@@ -4,7 +4,7 @@ extends Node
 ## Autoloaded as `Journal` (see project.godot). DialogueManager reports every
 ## set_flag here; canonical flags set truthy become discovered entries, keyed by
 ## the flag name. Entries persist through GameState's save/load and are wiped
-## on New Game. Reader UI still to come.
+## on New Game. JournalReader (scripts/journal_reader.gd) renders them.
 
 signal entry_added(id: String)
 
@@ -17,7 +17,39 @@ const CANONICAL_FLAGS: Array[String] = [
 	"radioed_tom",
 ]
 
+## Display text per entry id, rendered by JournalReader. Ids are the canonical
+## flag names above. Bodies marked TODO are placeholders awaiting final copy.
+const ENTRY_TEXT: Dictionary = {
+	"skeptic": {
+		"title": "Fog does strange work",
+		"body": "TODO — the keeper's reading of Edith's log: tired, alone, seeing things. The page underneath disagrees.",
+	},
+	"believer": {
+		"title": "Something off the north rocks",
+		"body": "TODO — the keeper takes Edith at her word: a light that answers the lamp, three flashes then dark.",
+	},
+	"trusted_edith": {
+		"title": "Radioed the mainland",
+		"body": "TODO — the keeper decided this was worth telling. Tom ran her last supply out here; he would want to know.",
+	},
+	"radioed_tom": {
+		"title": "Salish on the mainland",
+		"body": "TODO — first contact with Tom Salish. Supply run Thursday if the water lets him. He asked to be told first, not the county.",
+	},
+}
+
 var _entries: Array[String] = []
+
+
+## Title for an entry id, falling back to the id itself for unknown entries.
+func title_for(id: String) -> String:
+	return str(ENTRY_TEXT.get(id, {}).get("title", id))
+
+
+## Body text for an entry id. Unknown ids get a visible placeholder rather than
+## an empty panel, so a missing ENTRY_TEXT row is obvious in play.
+func body_for(id: String) -> String:
+	return str(ENTRY_TEXT.get(id, {}).get("body", "(no entry text for '%s')" % id))
 
 
 func _ready() -> void:
@@ -63,4 +95,3 @@ func restore(ids: Array) -> void:
 		if typeof(id) == TYPE_STRING and not (id in _entries):
 			_entries.append(id)
 	print("Journal: restored %d entries from save" % _entries.size())
-# TODO: dialogue discovery hook and the reader UI.

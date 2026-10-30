@@ -184,6 +184,11 @@ func _show_pause_menu() -> void:
 		save.text = "Saved ✓" if ok else "Save failed")
 	vbox.add_child(save)
 
+	var journal := _menu_button("Journal")
+	journal.pressed.connect(func():
+		overlay.add_child(JournalReader.new()))
+	vbox.add_child(journal)
+
 	var settings := _menu_button("Settings")
 	settings.pressed.connect(func():
 		overlay.add_child(preload("res://scenes/ui/settings.tscn").instantiate()))
