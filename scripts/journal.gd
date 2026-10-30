@@ -18,23 +18,24 @@ const CANONICAL_FLAGS: Array[String] = [
 ]
 
 ## Display text per entry id, rendered by JournalReader. Ids are the canonical
-## flag names above. Bodies marked TODO are placeholders awaiting final copy.
+## flag names above. Written in the keeper's voice, first person, as notes made
+## after the fact. DRAFT (2026-10-30): review and revise before launch.
 const ENTRY_TEXT: Dictionary = {
 	"skeptic": {
-		"title": "Fog does strange work",
-		"body": "TODO — the keeper's reading of Edith's log: tired, alone, seeing things. The page underneath disagrees.",
+		"title": "Edith's last page",
+		"body": "Third night of fog, she wrote. A light off the north rocks that answered hers — three flashes, then dark, keeping her rhythm. Not the buoy. Not a ship. She told no one, because there was no one to tell.\n\nShe meant to row out and meet it. Relight the lamp first, she said, so whoever came next could find the way back. That was eleven days ago. The dinghy is gone from the boathouse and the lamp above me is cold.\n\nFog does strange work on a person alone. Eleven days of it, no voice but the radio, and the radio off. I want that to be all this is. I'll keep the light and keep my head, and I won't go looking for lights that answer.\n\nThe handwriting gets smaller toward the bottom of the page. I noticed that. I'm choosing not to think about it.",
 	},
 	"believer": {
-		"title": "Something off the north rocks",
-		"body": "TODO — the keeper takes Edith at her word: a light that answers the lamp, three flashes then dark.",
+		"title": "Edith's last page",
+		"body": "Third night of fog, she wrote. A light off the north rocks that answered hers — three flashes, then dark, keeping her rhythm. Not the buoy. Not a ship. She told no one, because there was no one to tell.\n\nShe meant to row out and meet it. Relight the lamp first, she said, so whoever came next could find the way back. That was eleven days ago. The dinghy is gone from the boathouse and the lamp above me is cold.\n\nI believe her. I read it twice and I believe her. She was a keeper for longer than I've been anything, and she knew a buoy from a ship from a light that keeps time. Whatever it was, it was out there, and it was answering.\n\nShe relit nothing. Or she did, and it went out again after. I don't know which is worse. I'll find out tonight, when the fog comes back.",
 	},
 	"trusted_edith": {
-		"title": "Radioed the mainland",
-		"body": "TODO — the keeper decided this was worth telling. Tom ran her last supply out here; he would want to know.",
+		"title": "Told the mainland",
+		"body": "I decided this isn't mine to keep. A keeper is missing, a boat is missing, and the last thing she wrote was a plan. Someone on shore should know that much, whatever they make of the rest.\n\nTom Salish ran her last supply out here. If anyone will take this seriously, it's him. If anyone will tell me I'm being a fool, it's also him. Either way I'd rather hear it than stand up here with it alone.\n\nShe told no one. I'm not going to make the same choice. That might be the only thing I've decided so far that I'm sure about.",
 	},
 	"radioed_tom": {
-		"title": "Salish on the mainland",
-		"body": "TODO — first contact with Tom Salish. Supply run Thursday if the water lets him. He asked to be told first, not the county.",
+		"title": "Salish, on the mainland",
+		"body": "Raised Tom Salish on the set. Mainland side — he runs the supply boat out here, ran Edith's for however long she kept this light. He said it took me long enough to switch the radio on. Fair.\n\nWeather turns by the weekend. He'll bring the next supply Thursday if the water lets him. Thursday, then. Something to count toward.\n\nOn Edith: the line went quiet before he answered. He said she wouldn't come down to the dock the last time — just waved from the gallery. And he said if I find anything in that logbook I'm to tell him first. Not the county. Him.\n\nI don't know what he thinks is in it. I don't know what he's afraid is in it. I'll keep the kettle on and the light steady, like he said, and I'll remember that he asked.",
 	},
 }
 
