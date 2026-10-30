@@ -26,6 +26,7 @@ func get_flag(name: String, default: Variant = false) -> Variant:
 
 func new_game() -> void:
 	flags.clear()
+	Journal.clear()
 	current_scene = "res://scenes/game.tscn"
 	state_changed.emit()
 
@@ -39,6 +40,7 @@ func save_game() -> bool:
 		"version": SAVE_VERSION,
 		"scene": current_scene,
 		"flags": flags,
+		"journal": Journal.entries(),
 	}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file == null:
@@ -69,6 +71,9 @@ func load_game() -> bool:
 	current_scene = data.get("scene", "res://scenes/game.tscn")
 	var loaded_flags: Variant = data.get("flags", {})
 	flags = loaded_flags if typeof(loaded_flags) == TYPE_DICTIONARY else {}
+	# Saves from v0.2-demo-rc and earlier have no "journal" key; they load as empty.
+	var loaded_journal: Variant = data.get("journal", [])
+	Journal.restore(loaded_journal if typeof(loaded_journal) == TYPE_ARRAY else [])
 	state_changed.emit()
 	return true
 

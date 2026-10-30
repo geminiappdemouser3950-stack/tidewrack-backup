@@ -31,6 +31,18 @@ func has(id: String) -> bool:
 	return id in _entries
 
 
+## Wipe all entries. Called by GameState.new_game() so a fresh run starts empty.
 func clear() -> void:
 	_entries.clear()
-# TODO: persist entries through GameState.save_game() and add the reader UI.
+
+
+## Replace the in-memory entries with the list from a save file. Called by
+## GameState.load_game(). Non-string or duplicate ids are dropped so a hand-edited
+## or partially corrupt save cannot poison the list.
+func restore(ids: Array) -> void:
+	_entries.clear()
+	for id in ids:
+		if typeof(id) == TYPE_STRING and not (id in _entries):
+			_entries.append(id)
+	print("Journal: restored %d entries from save" % _entries.size())
+# TODO: dialogue discovery hook and the reader UI.
