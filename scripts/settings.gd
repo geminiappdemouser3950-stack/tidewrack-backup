@@ -2,11 +2,16 @@ extends Control
 ## Settings — volume + fullscreen overlay. Instantiated on top of any scene.
 
 var _volume_slider: HSlider
+## Focus owner when the overlay opened; handed back on close so the pause menu
+## stays navigable on a gamepad after Settings is dismissed.
+var _return_focus: Control = null
 
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
+	_return_focus = get_viewport().gui_get_focus_owner()
 	_build_ui()
+	tree_exiting.connect(_restore_focus)
 
 
 func _build_ui() -> void:
@@ -84,3 +89,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _close() -> void:
 	queue_free()
+
+
+func _restore_focus() -> void:
+	if is_instance_valid(_return_focus) and _return_focus.is_inside_tree():
+		_return_focus.grab_focus()

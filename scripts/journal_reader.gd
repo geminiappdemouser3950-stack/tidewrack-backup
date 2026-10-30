@@ -17,12 +17,18 @@ var _body: RichTextLabel
 var _empty: Label
 var _close_button: Button
 var _ids: Array[String] = []
+## The control that had focus when the reader opened (the pause menu's Journal
+## button). Focus is handed back on close so a gamepad player is not left with
+## nothing focused — otherwise the pause menu becomes unnavigable on a pad.
+var _return_focus: Control = null
 
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
+	_return_focus = get_viewport().gui_get_focus_owner()
 	_build_ui()
 	_populate()
+	tree_exiting.connect(_restore_focus)
 
 
 func _build_ui() -> void:
@@ -99,6 +105,19 @@ func _build_ui() -> void:
 	_close_button.pressed.connect(_close)
 	vbox.add_child(_close_button)
 
+	# Explicit focus neighbours so a pad can move between the list and Back
+	# with the stick/d-pad instead of relying on Godot's distance-based guess.
+	_list.focus_neighbor_right = _close_button.get_path()
+	_list.focus_neighbor_bottom = _close_button.get_path()
+	_close_button.focus_neighbor_left = _list.get_path()
+	_close_button.focus_neighbor_top = _list.get_path()
+
+	var hint := Label.new()
+	hint.text = "Up / Down: browse    B / Esc: back"
+	hint.modulate = Color(1, 1, 1, 0.45)
+	hint.add_theme_font_size_override("font_size", 14)
+	vbox.add_child(hint)
+
 
 func _populate() -> void:
 	_ids = Journal.entries()
@@ -133,3 +152,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _close() -> void:
 	queue_free()
+
+
+func _restore_focus() -> void:
+	if is_instance_valid(_return_focus) and _return_focus.is_inside_tree():
+		_return_focus.grab_focus()
